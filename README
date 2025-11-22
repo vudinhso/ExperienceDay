@@ -1,0 +1,8 @@
+The folder data contains: 
+- index.html
+- joy.js
+- RMIT-logo.png
+- style.css
+
+The webserver can be uploaded via: Project Tasks --> esp32dev --> Platform --> Build Filesystem Image 
+then Upload Filesystem Image

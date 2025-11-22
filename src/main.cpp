@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "MyServer.h"
 #include "MyMotor.h"
-#include "Config.h"
+#include "MyConfig.h"
 
 // ===========================================
 // Setup

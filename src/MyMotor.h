@@ -15,7 +15,7 @@
 #define PWM_RES 8
 
 double motor_cmd_1 = 0, motor_cmd_2 = 0, motor_cmd_3 = 0, motor_cmd_4 = 0; // Command between [-255; 0] for reverse, [0; 255] for forward
-int deadzone = 80;                                                         // Deadzone value
+int deadzone = 70;                                                         // Deadzone value
 
 // int PWM_A = 127, PWM_B = 127, PWM_C = 127, PWM_D = 127;
 // int LValue, RValue, commaIndex;
@@ -72,10 +72,28 @@ void Calculate_Motor_Cmd()
     //   motor_cmd_2 = web_cmd_y + web_cmd_x - web_cmd_z;
     //   motor_cmd_3 = web_cmd_y - web_cmd_x + web_cmd_z;
     //   motor_cmd_4 = web_cmd_y + web_cmd_x + web_cmd_z;
-    motor_cmd_1 = web_cmd_y - web_cmd_x;
+
     // motor_cmd_2 = web_cmd_y + web_cmd_x - web_cmd_z;
-    motor_cmd_3 = web_cmd_y + web_cmd_x;
+
     // motor_cmd_4 = web_cmd_y + web_cmd_x + web_cmd_z;
+    
+    float x = web_cmd_x / 200.0f; // -1..1
+    float y = web_cmd_y / 200.0f; // -1..1
+    float speed_factor = float(web_cmd_z) / 100.0f;
+
+    x = x * x * x; // keeps sign, soft near 0, strong near ±1
+
+    const float MIN_TURN_AT_FULL_SPEED = 0.6f;
+    float turn_scale =  MIN_TURN_AT_FULL_SPEED +
+                        (1.0f - MIN_TURN_AT_FULL_SPEED) * (1.0f - fabs(y));
+
+    x *= turn_scale;                    
+
+    motor_cmd_1 = (y - x) * speed_factor * 200.0f;
+    motor_cmd_3 = (y + x) * speed_factor * 200.0f;
+
+    // motor_cmd_1 = (web_cmd_y - web_cmd_x*0.5)*(web_cmd_z/100.0);
+    // motor_cmd_3 = (web_cmd_y + web_cmd_x*0.5)*(web_cmd_z/100.0);
 
     // Deadzone compensation and constrain
     motor_cmd_1 = (motor_cmd_1 > 0) ? constrain(motor_cmd_1 + deadzone, -255, 255) : constrain(motor_cmd_1 - deadzone, -255, 255);
@@ -91,6 +109,4 @@ void Run_Motor()
     // Send_PWM(MOT_IN3A, MOT_IN3B, motor_cmd_3, 3);
     Send_PWM(MOT_IN1B, MOT_IN1A, motor_cmd_1, 1);
     Send_PWM(MOT_IN3B, MOT_IN3A, motor_cmd_3, 3);
-    
-    
 }
